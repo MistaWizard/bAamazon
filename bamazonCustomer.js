@@ -57,7 +57,7 @@ function startPrompt() {
     });
 };
 
-inventory = function(){
+function inventory() {
     let query = "Select * FROM products";
     let table = new Table ({
 		head: ["Item ID".blue, "Product Name".blue, "Catergory".blue, "Price".blue, "Quantity".blue],
