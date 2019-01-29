@@ -4,6 +4,8 @@ require("dotenv").config();
 const keys = require("./keys.js");
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const colors = require('colors');
+const Table = require("cli-table");
 
 const pwd = keys.mysqlDB.password;
 
