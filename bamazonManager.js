@@ -29,22 +29,48 @@ connection.connect(function(err) {
     startPrompt();
 });
 
+function validateInteger(value) {
+	let integer = Number.isInteger(parseFloat(value));
+	let sign = Math.sign(value);
+
+	if (integer && (sign === 1)) {
+		return true;
+	} else {
+		return 'Please enter a whole non-zero number.';
+	}
+};
+
+function validateNumeric(value) {
+	// Value must be a positive number
+	let number = (typeof parseFloat(value)) === 'number';
+	let positive = parseFloat(value) > 0;
+
+	if (number && positive) {
+		return true;
+	} else {
+		return 'Please enter a positive number for the unit price.'
+	}
+};
+
 function startPrompt() {
     inquirer.prompt([
         {
             type: "list",
-            name: "actions";
+            name: "actions",
             message: "Welcome Michael Scott. What would you like to review?",
             choices: ["View Products For Sale", "View Low Inventory", "Add To Inventory", "Add New Product"]
         }
     ]).then(function(user) {
-        if (user.actionList === "View Products For Sale") {
+        if (user.actions === "View Products For Sale") {
             inventory();
-        } else if (user.actionList === "View Low Inventory") {
+        }
+        else if (user.actions === "View Low Inventory") {
             lowInventory();
-        } else if (user.actionList === "Add To Inventory") {
+        }
+        else if (user.actions === "Add To Inventory") {
             addInventory();
-        } else {
+        }
+        else if (user.actions === "Add New Product") {
             addProduct();
         }
     });
@@ -58,7 +84,7 @@ function inventory() {
 	});
 	connection.query(query, function(err, res){
 		if (err) throw err;
-		for (var i = 0; i < res.length; i++){
+		for (let i = 0; i < res.length; i++){
 			table.push(
 				[res[i].item_id,res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
 			);
@@ -68,7 +94,7 @@ function inventory() {
         console.log("");
         console.log(table.toString());
         console.log("");
-		continuePrompt();
+		startPrompt();
 	});
 };
 
@@ -80,7 +106,7 @@ function lowInventory() {
     });
 	connection.query(query, function(err, res){
 		if (err) throw err;
-		for (var i = 0; i < res.length; i++){
+		for (let i = 0; i < res.length; i++){
 			table.push(
 				[res[i].item_id,res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
 			);
@@ -90,7 +116,7 @@ function lowInventory() {
         console.log("");
         console.log(table.toString());
         console.log("");
-		continuePrompt();
+		startPrompt();
 	});
 };
 
@@ -100,60 +126,63 @@ function addInventory() {
             type: "input",
             name: "inputId",
             message: "Please enter the ID number of the item you would like to add inventory to.",
+            validate: validateInteger,
+            filter: Number
         },
         {
             type: "input",
             name: "inputNumber",
             message: "How many units of this item would you like to have in the in-store stock quantity?",
+            validate: validateInteger,
+            filter: Number
         }
     ]).then(function(managerAdd) {
-
-          connection.query("UPDATE products SET ? WHERE ?", [{
-
-              stock_quantity: managerAdd.inputNumber
-          }, {
-              item_id: managerAdd.inputId
-          }], function(err, res) {
-          });
-      startPrompt();
+        let query = "UPDATE products SET ? WHERE ?";
+        connection.query(query, [{stock_quantity: managerAdd.inputNumber}, {item_id: managerAdd.inputId}], function(err, res) {
+            if (err) throw err;
+            console.log("Inventory Added");
+        });
+        startPrompt();
     });
 };
 
 function addProduct() {
 
-    //ask user to fill in all necessary information to fill columns in table
-    
-        inquirer.prompt([
-            {
-                type: "input",
-                name: "inputName",
-                message: "Please enter the item name of the new product.",
-            },
-            {
-                type: "input",
-                name: "inputDepartment",
-                message: "Please enter which department name of which the new product belongs.",
-            },
-            {
-                type: "input",
-                name: "inputPrice",
-                message: "Please enter the price of the new product (0.00).",
-            },
-            {
-                type: "input",
-                name: "inputStock",
-                message: "Please enter the stock quantity of the new product.",
-            }
-        ]).then(function(managerNew) {
-    
-          //connect to database, insert column data with input from user
-    
-        connection.query("INSERT INTO products SET ?", {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "inputName",
+            message: "Please enter the item name of the new product.",
+        },
+        {
+            type: "input",
+            name: "inputDepartment",
+            message: "Please enter which department name of which the new product belongs.",
+        },
+        {
+            type: "input",
+            name: "inputPrice",
+            message: "Please enter the price of the new product (0.00).",
+            validate: validateNumeric
+        },
+        {
+            type: "input",
+            name: "inputStock",
+            message: "Please enter the stock quantity of the new product.",
+            validate: validateInteger,
+            filter: Number
+        }
+    ]).then(function(managerNew) {
+        let query = "INSERT INTO products SET ?";
+        connection.query(query, {
             product_name: managerNew.inputName,
             department_name: managerNew.inputDepartment,
             price: managerNew.inputPrice,
             stock_quantity: managerNew.inputStock
-        }, function(err, res) {});
+            }, function(err, res) {
+            if (err) throw err;
+            console.log("Inventory Added");
+        });
         startPrompt();
     });
 };

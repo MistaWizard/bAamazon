@@ -29,7 +29,8 @@ function validateInput(value) {
 
 	if (integer && (sign === 1)) {
 		return true;
-	} else {
+    }
+    else {
 		return 'Please enter a whole non-zero number.';
 	}
 };
@@ -51,8 +52,10 @@ function startPrompt() {
     ]).then(function(userStart) {
         if (userStart.confirm === true) {
             inventory();
-        } else {
+        }
+        else {
             console.log("Thank you! Come back soon!");
+            process.exit();
         }
     });
 };
@@ -65,7 +68,7 @@ function inventory() {
 	});
 	connection.query(query, function(err, res){
 		if (err) throw err;
-		for (var i = 0; i < res.length; i++){
+		for (let i = 0; i < res.length; i++){
 			table.push(
 				[res[i].item_id,res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
 			);
@@ -90,8 +93,10 @@ function continuePrompt() {
     ]).then(function(userContinue) {
         if (userContinue.continue === true) {
             selectionPrompt();
-        } else {
+        } 
+        else {
             console.log("Thank you! Come back soon!");
+            process.exit();
         }
     });
 };
@@ -114,8 +119,10 @@ function selectionPrompt() {
 
         }
     ]).then(function(userPurchase) {
-        connection.query("SELECT * FROM products WHERE item_id=?", userPurchase.inputId, function(err, res) {
-            for (var i = 0; i < res.length; i++) {
+        let query = "SELECT * FROM products WHERE item_id=?";
+        connection.query(query, userPurchase.inputId, function(err, res) {
+            if (err) throw err;
+            for (let i = 0; i < res.length; i++) {
 
                 if (userPurchase.inputNumber > res[i].stock_quantity) {
 
@@ -123,8 +130,8 @@ function selectionPrompt() {
                     console.log("Sorry! Not enough in stock. Please try again later.".red);
                     console.log("***************************************************".red);
                     startPrompt();
-
-                } else {
+                }
+                else {
                     console.log("***********************************".green);
                     console.log("Awesome! We can fulfull your order.".green);
                     console.log("***********************************".green);
@@ -158,18 +165,17 @@ function confirmPrompt(newStock, purchaseId) {
         }
         ]).then(function(userConfirm) {
         if (userConfirm.confirmPurchase === true) {
-
-            connection.query("UPDATE products SET ? WHERE ?", [{
-                stock_quantity: newStock
-            }, {
-                item_id: purchaseId
-            }], function(err, res) {});
-
+            let query = "UPDATE products SET ? WHERE ?";
+            connection.query(query, [{stock_quantity: newStock}, {item_id: purchaseId}], function(err, res) {
+                if (err) throw err;
+            });
+            
             console.log("*****************************".green);
             console.log("Transaction completed. Thank you.".green);
             console.log("*****************************".green);
             startPrompt();
-        } else {
+        }
+        else {
             console.log("*****************************".cyan);
             console.log("No worries. Maybe next time!".cyan);
             console.log("*****************************".cyan);
