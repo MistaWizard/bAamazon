@@ -9,26 +9,22 @@ const Table = require("cli-table");
 
 const pwd = keys.mysqlDB.password;
 
+// Database Setup
 const connection = mysql.createConnection({
-  host: "localhost",
+    host: "localhost",
 
-  // Your port; if not 3306
-  port: 3306,
+    // Your port; if not 3306
+    port: 3306,
 
-  // Your username
-  user: "root",
+    // Your username
+    user: "root",
 
-  // Your password
-  password: pwd,
-  database: "bamazon"
+    // Your password
+    password: pwd,
+    database: "bamazon"
 });
 
-connection.connect(function(err) {
-    if (err) throw err;
-    console.log("connected as id " + connection.threadId);
-    startPrompt();
-});
-
+// Validate any whole number inputs
 function validateInteger(value) {
 	let integer = Number.isInteger(parseFloat(value));
 	let sign = Math.sign(value);
@@ -40,8 +36,8 @@ function validateInteger(value) {
 	}
 };
 
+// Validate any positive number inputs
 function validateNumeric(value) {
-	// Value must be a positive number
 	let number = (typeof parseFloat(value)) === 'number';
 	let positive = parseFloat(value) > 0;
 
@@ -52,6 +48,14 @@ function validateNumeric(value) {
 	}
 };
 
+// Connect to our database
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("connected as id " + connection.threadId);
+    startPrompt();
+});
+
+// This begins our user interaction
 function startPrompt() {
     inquirer.prompt([
         {
@@ -76,6 +80,7 @@ function startPrompt() {
     });
 };
 
+// Displays inventory for the user
 function inventory() {
     let query = "Select * FROM products";
     let table = new Table ({
@@ -98,6 +103,7 @@ function inventory() {
 	});
 };
 
+// Displays low (below 5) inventory for the user
 function lowInventory() {
     let query = "Select * FROM products WHERE stock_quantity < 5";
     let table = new Table ({
@@ -120,6 +126,7 @@ function lowInventory() {
 	});
 };
 
+// Adds more inventory for an existing item
 function addInventory() {
     inquirer.prompt([
         {
@@ -146,8 +153,8 @@ function addInventory() {
     });
 };
 
+// Adds a new item to the database
 function addProduct() {
-
     inquirer.prompt([
         {
             type: "input",

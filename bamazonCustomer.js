@@ -9,20 +9,22 @@ const Table = require("cli-table");
 
 const pwd = keys.mysqlDB.password;
 
+// Database Setup
 const connection = mysql.createConnection({
-  host: "localhost",
+    host: "localhost",
+  
+    // Your port; if not 3306
+    port: 3306,
+  
+    // Your username
+    user: "root",
+  
+    // Your password
+    password: pwd,
+    database: "bamazon"
+  });
 
-  // Your port; if not 3306
-  port: 3306,
-
-  // Your username
-  user: "root",
-
-  // Your password
-  password: pwd,
-  database: "bamazon"
-});
-
+// Validate any number inputs
 function validateInput(value) {
 	let integer = Number.isInteger(parseFloat(value));
 	let sign = Math.sign(value);
@@ -35,12 +37,14 @@ function validateInput(value) {
 	}
 };
 
+// Connect to our database
 connection.connect(function(err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId);
     startPrompt();
 });
 
+// This begins our user interaction
 function startPrompt() {
     inquirer.prompt([
         {
@@ -60,6 +64,7 @@ function startPrompt() {
     });
 };
 
+// Displays inventory for the user
 function inventory() {
     let query = "Select * FROM products";
     let table = new Table ({
@@ -82,6 +87,7 @@ function inventory() {
 	});
 };
 
+// Ask user to continue or exit
 function continuePrompt() {
     inquirer.prompt([
         {
@@ -101,6 +107,7 @@ function continuePrompt() {
     });
 };
 
+// Selecting the item they'd like to buy
 function selectionPrompt() {
     inquirer.prompt([{
 
@@ -154,8 +161,8 @@ function selectionPrompt() {
     });
 };
 
+// Confirming with the user they'd like to buy the selected item
 function confirmPrompt(newStock, purchaseId) {
-
     inquirer.prompt([
         {
             type: "confirm",
